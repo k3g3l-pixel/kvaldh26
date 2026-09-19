@@ -1,1 +1,12 @@
-
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Kajakad ja Põdrad</title>
+	</head>
+	<body>
+		<h1>Sisukord</h1>
+		<div>
+			Kajakad<a href="leht2.html">Keerukam leht</a>
+		</div>
+	</body>
+</html>
