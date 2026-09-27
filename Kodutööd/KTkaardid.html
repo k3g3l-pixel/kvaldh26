@@ -25,8 +25,8 @@
   function kuva(kohad){
 	console.log(kohad);
 	for(let koht of kohad){
-	  L.marker([koht[0], koht[1]]).addTo(kaart);
-	  L.circle([koht[0], koht[1]], {radius: 10, color: "yellow"}).addTo(kaart);	
+	  L.marker([koht[0], koht[1]]).addTo(kaart).bindPopup(koht[2]);
+	  L.circle([koht[0], koht[1]], {radius: 100, color: "yellow"}).addTo(kaart);	
 	}
   }
 
