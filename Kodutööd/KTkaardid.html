@@ -26,6 +26,7 @@
 	console.log(kohad);
 	for(let koht of kohad){
 	  L.marker([koht[0], koht[1]]).addTo(kaart);
+	  L.circle([koht[0], koht[1]], {radius: 10, color: "yellow"}).addTo(kaart);	
 	}
   }
 
