@@ -21,7 +21,7 @@
 
    	hypik=L.popup(); 
 	kaart.on("click", vajutus);
-    fetch("https://router.project-osrm.org/route/v1/driving/24.55307,59.428316;24.987373,59.457465?overview=full&geometries=geojson").then(d => d.json()).then(kuvaTee);
+    fetch("https://router.project-osrm.org/route/v1/driving/24.391022,59.306738;23.517609,58.572191?overview=full&geometries=geojson").then(d => d.json()).then(kuvaTee);
    }
 	function kuvaTee(andmed){
 		tee=andmed.routes[0];
@@ -34,9 +34,12 @@
 		 setContent("Vajutasid "+e.latlng.toString()).openOn(kaart);
 
      // http://router.project-osrm.org/route/v1/driving/13.388860,52.517037;13.397634,52.529407?overview=full&geometries=geojson
-     // http://router.project-osrm.org/route/v1/driving/24.55307,59.428316;24.987373,59.457465?overview=full&geometries=geojson
+     // http://router.project-osrm.org/route/v1/driving/24.391022,59.306738;23.517609,58.572191?overview=full&geometries=geojson
 	   //59.428316, 24.55307
 	   //59.457465, 24.987373
+
+	   //59.306738, 24.391022
+	   //58.572191, 23.517609
    }
 
   </script>
