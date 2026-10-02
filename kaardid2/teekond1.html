@@ -21,12 +21,13 @@
 
    	hypik=L.popup(); 
 	kaart.on("click", vajutus);
-    fetch("http://router.project-osrm.org/route/v1/driving/24.55307,59.428316;24.987373,59.457465?overview=full&geometries=geojson").then(d => d.json()).then(kuvaTee);
+    fetch("https://router.project-osrm.org/route/v1/driving/24.55307,59.428316;24.987373,59.457465?overview=full&geometries=geojson").then(d => d.json()).then(kuvaTee);
    }
 	function kuvaTee(andmed){
 		tee=andmed.routes[0];
 		console.log(tee["duration"], tee["distance"]);
 		console.log(tee["geometry"]);
+		L.geoJSON(tee.geometry).addTo(kaart);
 	}
    function vajutus(e){
 	     hypik.setLatLng(e.latlng).
