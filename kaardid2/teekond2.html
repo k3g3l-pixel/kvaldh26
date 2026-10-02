@@ -29,7 +29,7 @@
 	kaart.on("click", vajutus);
    }
    function liikumine(){
-	   selgitus.value=marker1.getLatLng().distanceTo(marker2.getLatLng());
+	   selgitus.innerText=marker1.getLatLng().distanceTo(marker2.getLatLng());
    }
 	function kuvaTee(andmed){
 		tee=andmed.routes[0];
