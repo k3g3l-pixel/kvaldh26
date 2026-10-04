@@ -27,7 +27,7 @@
 		 setContent("Vajutasid "+e.latlng.toString()).openOn(kaart);
 	     let lisand="laiuskraad="+e.latlng.lat+"&pikkuskraad="+e.latlng.lng+"&tyyp="+tyybivalik.value+"&kommentaar="+encodeURI(kast1.value);
 	     console.log(lisand);
-	     fetch("https://script.google.com/macros/s/AKfycbyetvHqyhCtuBd2zaw7cYvYrEJK8qndCIzqnTwNfbCa5G1PcCy_FQODr4HopTG9hyJi9g/exec?"+lisand
+	     fetch("https://script.google.com/macros/s/AKfycbzqR2GtxABxVGgby52vf-gXfKe51TY4a5_jb5sg3o9aL5xFWuVwPt5kxwycrPOJj_43/exec?"+lisand
 			    ).then(d => d.json()).then(kuva);
    }
 
