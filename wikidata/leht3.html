@@ -8,7 +8,7 @@
               WHERE
               {
                 ?item wdt:P27 wd:${riik.value}. 
-                ?item wdt:P106 wd:Q177220.
+                ?item wdt:P106 wd:${occupation.value}. 
               
                 SERVICE wikibase:label {
                   bd:serviceParam wikibase:language "[AUTO_LANGUAGE],mul,en".
@@ -40,6 +40,11 @@
        <option value="Q191">Eesti</option>
        <option value="Q142">Prantsusmaa</option>
        <option value="Q38">Itaalia</option>
+     </select>
+     <select>
+       <option value="Q201788">Ajaloolane</option>
+       <option value="Q378622">Racing driver</option>
+       <option value="Q82955">Poliitik</option>
      </select>
      <input type="button" value="otsi" onclick="kysi()" />
      
