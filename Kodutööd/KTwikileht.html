@@ -3,9 +3,6 @@
   <head>
      <script>
         function kysi(){ 
-           //Vaadake, milliseid ameteid (P106) on Wikidatas
-           //Võimaldage teisest rippmenüüst valida ametit
-           // (uuel lehel)
            let lause=`SELECT ?kool ?koolLabel (COUNT(*) as ?kogus) {
                 ?isik wdt:P27 wd:${riik.value}.
                 ?isik wdt:P106 wd:${amet.value}.
