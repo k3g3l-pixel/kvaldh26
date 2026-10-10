@@ -3,16 +3,13 @@
   <head>
      <script>
         function kysi(){ 
-           let lause=`SELECT ?kool ?koolLabel (COUNT(*) as ?kogus) {
-                ?isik wdt:P27 wd:${riik.value}.
-                ?isik wdt:P106 wd:${amet.value}.
-                ?isik wdt:P69 ?kool.
+           let lause=`SELECT ?asi ?asiLabel {
+                ?asi wdt:P279 wd:${alamklass.value}.
                 SERVICE wikibase:label {
                   bd:serviceParam wikibase:language "et,en".
                 } 
               
-              } GROUP BY ?kool ?koolLabel
-               ORDER BY DESC(?kogus)
+              } 
 
               LIMIT 10
            `;
@@ -28,25 +25,19 @@
            console.log(d);
            vastus.innerHTML="";
            for(let rida of d["results"]["bindings"]){
-              console.log(rida["koolLabel"]["value"]);
+              console.log(rida["asiLabel"]["value"]);
               let lause=document.createElement("li");
-              lause.textContent=rida["koolLabel"]["value"];
+              lause.textContent=rida["asiLabel"]["value"];
               vastus.appendChild(lause);
            }
         }
      </script>
   </head>
   <body>
-     <select id="riik" onchange="kysi()">
-        <option value="Q33">Soome</option>
-        <option value="Q191">Eesti</option>
-        <option value="Q34">Rootsi</option>
-     </select>
-     <select id="amet" onchange="kysi()">
-      <option value="Q193391">diplomaat</option>
-      <option value="Q333634">tõlkija</option>
-      <option value="Q201788">ajaloolane</option>
-      <option value="Q82955">poliitik</option>
+     <select id="alamklass" onchange="kysi()">
+        <option value="Q132911">Liftid</option>
+        <option value="Q146">Kassid</option>
+        <option value="Q886167">Lilled</option>
      </select>
      <input type="button" value="otsi" onclick="kysi()" />
  
