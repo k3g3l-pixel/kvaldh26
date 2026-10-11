@@ -3,8 +3,9 @@
   <head>
      <script>
         function kysi(){ 
-           let lause=`SELECT ?asi ?asiLabel {
-                ?asi wdt:P279 wd:${alamklass.value}.
+           let lause=`SELECT ?asi ?asiLabel ?pilt {
+                ?asi wdt:P279 wd:${alamklass.value};
+                wdt:P18 ?pilt.
                 SERVICE wikibase:label {
                   bd:serviceParam wikibase:language "et,en".
                 } 
