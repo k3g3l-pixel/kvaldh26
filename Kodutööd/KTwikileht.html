@@ -1,58 +1,155 @@
 <!doctype html>
+
 <html>
   <head>
-     <script>
-        function kysi(){ 
-           let lause=`SELECT ?asi ?asiLabel ?pilt {
-                ?asi wdt:P279 wd:${alamklass.value};
-                wdt:P18 ?pilt.
-                SERVICE wikibase:label {
-                  bd:serviceParam wikibase:language "et,en".
-                } 
-              
-              } 
 
-              LIMIT 5
-           `;
-           console.log(lause);
-           let aadress="https://query.wikidata.org/sparql?format=json&query="+encodeURI(lause);  
-           vastus.innerHTML="ootan vastust";
-           fetch(aadress).then(d => d.json()).then(kuva);
-        }
+<script>
+  function kysi() {
+    let kategooria = document.getElementById("alamklass").value;
+    let vaade = document.getElementById("vaade").value;
 
-         function kuva(d){
-       console.log(d);
-       vastus.innerHTML="";
+    let lause;
 
-       for(let rida of d["results"]["bindings"]){
+    if (vaade === "pildid") {
+      lause = `
+        SELECT ?asi ?asiLabel ?pilt {
+          ?asi wdt:P279 wd:${kategooria};
+               wdt:P18 ?pilt.
 
-          let item = document.createElement("li");
-
-          let nimi = document.createElement("p");
-          nimi.textContent = rida["asiLabel"]["value"];
-          item.appendChild(nimi);
-
-          if (rida["pilt"]) {
-             let pilt = document.createElement("img");
-             pilt.src = rida["pilt"]["value"];
-             pilt.alt = rida["asiLabel"]["value"];
-             pilt.width = 200;
-
-             item.appendChild(pilt);
+          SERVICE wikibase:label {
+            bd:serviceParam wikibase:language "et,en".
           }
-          vastus.appendChild(item);
-       }
+        }
+        LIMIT 5
+      `;
     }
-     </script>
+
+    else if (vaade === "eponuumid") {
+      lause = `
+        SELECT ?item ?itemLabel ?eponym ?eponymLabel
+        WHERE {
+          ?item wdt:P31 wd:${kategooria};
+                wdt:P138 ?eponym.
+
+          SERVICE wikibase:label {
+            bd:serviceParam wikibase:language "en,et".
+          }
+        }
+        LIMIT 5
+      `;
+    }
+
+    console.log(lause);
+
+    let aadress =
+      "https://query.wikidata.org/sparql?format=json&query=" +
+      encodeURIComponent(lause);
+
+    let vastus = document.getElementById("vastus");
+    vastus.innerHTML = "Ootan vastust...";
+
+    fetch(aadress)
+      .then(d => {
+        if (!d.ok) {
+          throw new Error("Päring ebaõnnestus: " + d.status);
+        }
+        return d.json();
+      })
+      .then(kuva)
+      .catch(viga => {
+        console.error(viga);
+        vastus.innerHTML = "Andmete laadimine ebaõnnestus.";
+      });
+  }
+
+
+  function kuva(d) {
+    let vastus = document.getElementById("vastus");
+    let vaade = document.getElementById("vaade").value;
+
+    vastus.innerHTML = "";
+
+    let read = d.results.bindings;
+
+    if (read.length === 0) {
+      vastus.textContent = "Tulemusi ei leitud.";
+      return;
+    }
+
+    for (let rida of read) {
+      let item = document.createElement("li");
+
+      if (vaade === "pildid") {
+        let nimi = document.createElement("p");
+        nimi.textContent = rida.asiLabel.value;
+        item.appendChild(nimi);
+
+        if (rida.pilt) {
+          let pilt = document.createElement("img");
+          pilt.src = rida.pilt.value;
+          pilt.alt = rida.asiLabel.value;
+          pilt.width = 200;
+          pilt.style.display = "block";
+
+          item.appendChild(pilt);
+        }
+      }
+
+      else if (vaade === "eponuumid") {
+        let nimi = document.createElement("p");
+        nimi.textContent =
+          "Item: " + rida.itemLabel.value;
+        item.appendChild(nimi);
+
+        let eponuum = document.createElement("p");
+        eponuum.textContent =
+          "Named after: " + rida.eponymLabel.value;
+        item.appendChild(eponuum);
+      }
+
+      vastus.appendChild(item);
+    }
+  }
+</script>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+  }
+
+  li {
+    margin-bottom: 20px;
+  }
+
+  img {
+    object-fit: contain;
+  }
+</style>
+
   </head>
+
   <body>
-     <select id="alamklass" onchange="kysi()">
-        <option value="Q132911">Liftid</option>
-        <option value="Q146">Kassid</option>
-        <option value="Q886167">Lilled</option>
-     </select>
-     <input type="button" value="otsi" onclick="kysi()" />
- 
-     <ul id="vastus"></ul>
+
+<label for="alamklass">Category:</label>
+
+<select id="alamklass" onchange="kysi()">
+  <option value="Q132911">Lifts</option>
+  <option value="Q146">Cats</option>
+  <option value="Q886167">Flowers</option>
+</select>
+
+<br><br>
+
+<label for="vaade">Display:</label>
+
+<select id="vaade" onchange="kysi()">
+  <option value="pildid">Pictures</option>
+  <option value="eponuumid">Eponyms</option>
+</select>
+
+<input type="button" value="Search" onclick="kysi()">
+
+<ul id="vastus"></ul>
+
   </body>
 </html>
