@@ -22,16 +22,34 @@
 
 
        
-        function kuva(d){
-           console.log(d);
-           vastus.innerHTML="";
-           for(let rida of d["results"]["bindings"]){
-              console.log(rida["asiLabel"]["value"]);
-              let lause=document.createElement("li");
-              lause.textContent=rida["asiLabel"]["value"];
-              vastus.appendChild(lause);
-           }
-        }
+         function kuva(d){
+       console.log(d);
+       vastus.innerHTML="";
+
+       for(let rida of d["results"]["bindings"]){
+
+          // Create a list item
+          let item = document.createElement("li");
+
+          // Display the name
+          let nimi = document.createElement("p");
+          nimi.textContent = rida["asiLabel"]["value"];
+          item.appendChild(nimi);
+
+          // Display the picture, if available
+          if (rida["pilt"]) {
+             let pilt = document.createElement("img");
+             pilt.src = rida["pilt"]["value"];
+             pilt.alt = rida["asiLabel"]["value"];
+             pilt.width = 200;
+
+             item.appendChild(pilt);
+          }
+
+          // Add the name and picture to the list
+          vastus.appendChild(item);
+       }
+    }
      </script>
   </head>
   <body>
