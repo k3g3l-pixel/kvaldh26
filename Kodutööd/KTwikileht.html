@@ -12,7 +12,7 @@
               
               } 
 
-              LIMIT 15
+              LIMIT 5
            `;
            console.log(lause);
            let aadress="https://query.wikidata.org/sparql?format=json&query="+encodeURI(lause);  
@@ -20,23 +20,18 @@
            fetch(aadress).then(d => d.json()).then(kuva);
         }
 
-
-       
          function kuva(d){
        console.log(d);
        vastus.innerHTML="";
 
        for(let rida of d["results"]["bindings"]){
 
-          // Create a list item
           let item = document.createElement("li");
 
-          // Display the name
           let nimi = document.createElement("p");
           nimi.textContent = rida["asiLabel"]["value"];
           item.appendChild(nimi);
 
-          // Display the picture, if available
           if (rida["pilt"]) {
              let pilt = document.createElement("img");
              pilt.src = rida["pilt"]["value"];
@@ -45,8 +40,6 @@
 
              item.appendChild(pilt);
           }
-
-          // Add the name and picture to the list
           vastus.appendChild(item);
        }
     }
