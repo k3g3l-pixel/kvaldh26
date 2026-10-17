@@ -9,7 +9,6 @@
   SERVICE wikibase:label { bd:serviceParam wikibase:language "et,en". }
 }`;
            console.log(lause);
-           // Kasutame encodeURIComponent, et vältida erroreid päringus
            let aadress="https://wikidata.org" + encodeURIComponent(lause);  
            
            let vastus = document.getElementById("vastus");
@@ -38,7 +37,6 @@
  
      <ul id="vastus"></ul>
 
-     <!-- PANE OMA IFRAME TÄPSELT SIIA (pärast nimekirja lõppu) -->
      <iframe style="width: 80vw; height: 50vh; border: none; display: block; margin-top: 20px;" 
              src="https://query.wikidata.org/embed.html#%23defaultView%3AGraph%0ASELECT%20%3Fisik2%20%3Fisik2Label%20%3Fraamat%20%3FraamatLabel%20WHERE%7B%0A%20%20%3Fraamat%20wdt%3AP527%20wd%3AQ465356.%0A%20%20%3Fraamat%20wdt%3AP527%20%3Fisik2%0A%20%20%20%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22et%2Cen%22.%20%7D%0A%7D%0A%0A%0A" 
              referrerpolicy="origin" 
