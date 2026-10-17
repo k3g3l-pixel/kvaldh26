@@ -1,0 +1,131 @@
+<!doctype html>
+
+<html>
+  <head>
+
+<script>
+  function kysi() {
+    let kategooria = document.getElementById("alamklass").value;
+    let vaade = document.getElementById("vaade").value;
+
+    let lause;
+
+    if (vaade === "pildid") {
+      lause = `
+        SELECT ?asi ?asiLabel ?pilt {
+          ?asi wdt:P279 wd:${kategooria};
+               wdt:P18 ?pilt.
+
+          SERVICE wikibase:label {
+            bd:serviceParam wikibase:language "et,en".
+          }
+        }
+        LIMIT 5
+      `;
+    }
+
+    else if (vaade === "eponuumid") {
+      lause = `
+        SELECT ?item ?itemLabel ?eponym ?eponymLabel
+        WHERE {
+          ?item wdt:P31 wd:${kategooria};
+                wdt:P138 ?eponym.
+
+          SERVICE wikibase:label {
+            bd:serviceParam wikibase:language "en,et".
+          }
+        }
+        LIMIT 5
+      `;
+    }
+
+    console.log(lause);
+
+    let aadress =
+      "https://query.wikidata.org/sparql?format=json&query=" +
+      encodeURIComponent(lause);
+
+    let vastus = document.getElementById("vastus");
+    vastus.innerHTML = "Ootan vastust...";
+
+    fetch(aadress)
+      .then(d => {
+        if (!d.ok) {
+          throw new Error("Päring ebaõnnestus: " + d.status);
+        }
+        return d.json();
+      })
+      .then(kuva)
+      .catch(viga => {
+        console.error(viga);
+        vastus.innerHTML = "Andmete laadimine ebaõnnestus.";
+      });
+  }
+
+
+  function kuva(d) {
+    let vastus = document.getElementById("vastus");
+    let vaade = document.getElementById("vaade").value;
+
+    vastus.innerHTML = "";
+
+    let read = d.results.bindings;
+
+    if (read.length === 0) {
+      vastus.textContent = "Tulemusi ei leitud.";
+      return;
+    }
+
+    for (let rida of read) {
+      let item = document.createElement("li");
+
+      if (vaade === "pildid") {
+        let nimi = document.createElement("p");
+        nimi.textContent = rida.asiLabel.value;
+        item.appendChild(nimi);
+
+        if (rida.pilt) {
+          let pilt = document.createElement("img");
+          pilt.src = rida.pilt.value;
+          pilt.alt = rida.asiLabel.value;
+          pilt.width = 200;
+          pilt.style.display = "block";
+
+          item.appendChild(pilt);
+        }
+      }
+
+      vastus.appendChild(item);
+    }
+  }
+</script>
+
+
+
+  </head>
+
+  <body>
+
+<label for="alamklass">Kategooria:</label>
+
+<select id="alamklass" onchange="kysi()">
+  <option value="Q132911">Liftid</option>
+  <option value="Q146">Kassid</option>
+  <option value="Q886167">Lilled</option>
+</select>
+
+<br><br>
+
+<label for="vaade">Vaade:</label>
+
+<select id="vaade" onchange="kysi()">
+  <option value="pildid">Pildid</option>
+  <option value="eponuumid">Eponüümid</option>
+</select>
+
+<input type="button" value="Search" onclick="kysi()">
+
+<ul id="vastus"></ul>
+
+  </body>
+</html>
