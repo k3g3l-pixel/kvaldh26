@@ -1,0 +1,165 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Ilmamemmed: Temperatuur ja Tuul</title>
+    <script>
+      /**
+       * Funktsioon ilmamemme joonistamiseks ilmaandmete põhjal
+       * @param {number} x - Lumememme X-koordinaat
+       * @param {number} y - Lumememme maapinna Y-koordinaat
+       * @param {number} temperatuur - Õhutemperatuur °C (mõjutab alumist palli)
+       * @param {number} tuulekiirus - Tuule kiirus m/s (mõjutab ülemist palli)
+       * @param {string} kuupaev - Kuupäeva tekst (kuvatakse memme all)
+       */
+      function joonistaIlmamemm(x, y, temperatuur, tuulekiirus, kuupaev){
+        let g = tahvel.getContext("2d");
+
+        // 1. REEGEL: Suurem temperatuur = suurem alumine pall
+        let r1 = 25 + Math.max(8, (temperatuur + 5) * 4.5);
+
+        // 2. REEGEL: Suurem tuulekiirus = suurem ülemine pall (pea)
+        let r3 = 12 + (tuulekiirus * 2.8);
+
+        // Keskmine pall
+        let r2 = (r1 * 0.6 + r3 * 0.8) / 1.2;
+
+        let y1 = y - r1;
+        let y2 = y1 - r1 - r2 + (r1 * 0.15);
+        let y3 = y2 - r2 - r3 + (r2 * 0.15);
+
+        let tuuleKalle = tuulekiirus * 1.2;
+
+        // Sulamisveelomp soojema ilmaga (> 0°C)
+        if (temperatuur > 0) {
+          g.fillStyle = "rgba(147, 197, 253, 0.45)";
+          g.beginPath();
+          g.ellipse(x, y + 2, r1 * 1.15, 6, 0, 0, Math.PI * 2);
+          g.fill();
+        }
+
+        // 3. OKSAD
+        g.strokeStyle = "#78350f";
+        g.lineWidth = Math.max(1.5, r2 * 0.08);
+
+        g.beginPath();
+        g.moveTo(x - r2 * 0.8, y2);
+        g.lineTo(x - r2 * 1.6 + tuuleKalle, y2 - r2 * 0.4);
+        g.lineTo(x - r2 * 2.0 + tuuleKalle * 1.5, y2 - r2 * 0.7);
+        g.stroke();
+
+        g.beginPath();
+        g.moveTo(x + r2 * 0.8, y2);
+        g.lineTo(x + r2 * 1.6 + tuuleKalle * 1.2, y2 - r2 * 0.3);
+        g.lineTo(x + r2 * 2.1 + tuuleKalle * 1.6, y2 - r2 * 0.5);
+        g.stroke();
+
+        // 4. KOLM LUMEPALLI
+        function joonistaKera(px, py, r){
+          g.fillStyle = "#ffffff";
+          g.beginPath();
+          g.arc(px, py, r, 0, 2 * Math.PI);
+          g.fill();
+          g.strokeStyle = "#cbd5e1";
+          g.lineWidth = 1.5;
+          g.stroke();
+        }
+
+        joonistaKera(x, y1, r1);
+        joonistaKera(x + tuuleKalle * 0.4, y2, r2);
+        joonistaKera(x + tuuleKalle * 0.8, y3, r3);
+
+        let headX = x + tuuleKalle * 0.8;
+
+        // 5. NÄGU
+        let silmaR = Math.max(1.5, r3 * 0.1);
+        g.fillStyle = "#0f172a";
+        g.beginPath();
+        g.arc(headX - r3 * 0.3, y3 - r3 * 0.15, silmaR, 0, 2 * Math.PI);
+        g.arc(headX + r3 * 0.3, y3 - r3 * 0.15, silmaR, 0, 2 * Math.PI);
+        g.fill();
+
+        // Porgand
+        g.fillStyle = "#ea580c";
+        g.beginPath();
+        g.moveTo(headX, y3);
+        g.lineTo(headX + r3 * 1.0, y3 + 2);
+        g.lineTo(headX, y3 + r3 * 0.2);
+        g.closePath();
+        g.fill();
+
+        // Nööbid
+        g.fillStyle = "#1e293b";
+        let noobiR = Math.max(1.5, r2 * 0.1);
+        for (let i = -1; i <= 1; i++){
+          g.beginPath();
+          g.arc(x + tuuleKalle * 0.4, y2 + (i * r2 * 0.38), noobiR, 0, 2 * Math.PI);
+          g.fill();
+        }
+
+        // 6. KAABU
+        let kaabuW = r3 * 1.5;
+        let kaabuH = r3 * 1.0;
+        let servW = r3 * 2.1;
+
+        g.save();
+        g.translate(headX, y3 - r3);
+        g.rotate(tuulekiirus * 0.02);
+        g.fillStyle = "#1e293b";
+        g.fillRect(-servW / 2, -2, servW, 4);
+        g.fillRect(-kaabuW / 2, -kaabuH, kaabuW, kaabuH);
+
+        g.fillStyle = temperatuur > 0 ? "#dc2626" : "#0284c7";
+        g.fillRect(-kaabuW / 2, -5, kaabuW, 3);
+        g.restore();
+
+        // 7. KUUPÄEV JA INFO ALL
+        g.fillStyle = "#ffffff";
+        g.font = "bold 13px system-ui, sans-serif";
+        g.textAlign = "center";
+        g.fillText(kuupaev, x, y + 25);
+
+        g.font = "11px system-ui, sans-serif";
+        g.fillStyle = temperatuur > 0 ? "#f87171" : "#38bdf8";
+        g.fillText(`${temperatuur > 0 ? '+' : ''}${temperatuur} °C`, x, y + 42);
+
+        g.fillStyle = "#cbd5e1";
+        g.fillText(`Tuul: ${tuulekiirus} m/s`, x, y + 58);
+      }
+
+      function joonista(){
+        let g = tahvel.getContext("2d");
+
+        g.fillStyle = "#0f172a";
+        g.fillRect(0, 0, 800, 420);
+
+        g.fillStyle = "#ffffff";
+        for (let i = 0; i < 40; i++){
+          let hx = (i * 37 + 15) % 800;
+          let hy = (i * 23 + 20) % 240;
+          g.fillRect(hx, hy, 1.8, 1.8);
+        }
+
+        g.fillStyle = "#f1f5f9";
+        g.beginPath();
+        g.ellipse(400, 420, 460, 140, 0, 0, Math.PI * 2);
+        g.fill();
+
+        let maapindY = 320;
+
+        // 4 päeva failist ilmaandmed.txt:
+        joonistaIlmamemm(110, maapindY, 3.5, 5.2, "08.11.2026");
+        joonistaIlmamemm(300, maapindY, 1.0, 7.8, "09.11.2026");
+        joonistaIlmamemm(490, maapindY, -2.4, 4.1, "10.11.2026");
+        joonistaIlmamemm(680, maapindY, -0.8, 6.5, "11.11.2026");
+      }
+    </script>
+  </head>
+  <body onload="joonista()" style="font-family: system-ui, sans-serif; background: #020617; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; text-align: center; padding: 20px;">
+    <h1 style="margin-bottom: 4px;">Ilmamemmede Visualiseerimine</h1>
+    <p style="color: #94a3b8; font-size: 13px; margin-top: 0; margin-bottom: 18px;">
+      Reeglid: <strong>Suurem temperatuur = suurem alumine pall</strong> | <strong>Suurem tuul = suurem ülemine pall (pea)</strong>
+    </p>
+    <canvas id="tahvel" width="800" height="420" style="border: 2px solid #334155; border-radius: 16px; box-shadow: 0 12px 30px rgba(0,0,0,0.7); max-width: 95%;">
+    </canvas>
+  </body>
+</html>
