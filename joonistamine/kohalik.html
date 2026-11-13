@@ -8,7 +8,6 @@
 	  // Ilmaandmed failist ilmaandmed.txt
 	  let ilmaandmed = [
 	    { kuupaev: "12.11", temp: 5, tuul: 6, puhang: 18 },
-
 	  ];
 
 	  // Funktsioon lumememme joonistamiseks ilmaandmete põhjal
@@ -49,7 +48,7 @@
 
 	  function joonista(){
 	    g = tahvel.getContext("2d");
-
+        g.clearRect(0, 0, 900, 340);
 	    // Joonistame iga päeva ilmaandmete põhjal lumememme
 	    for(let i = 0; i < ilmaandmed.length; i++){
 	      let d = ilmaandmed[i];
@@ -58,12 +57,20 @@
 	      lumememm(x, y, d.temp, d.tuul, d.puhang, d.kuupaev);
 	    }
 	  }
+	  function uuendaAndmed(){
+		  fetch("ilmaandmed.json").then(d => d.json()).then(loe);
+	  }
+	  function loe(andmed){
+		  ilmaandmed=andmed;
+		  joonista();
+	  }
 	</script>
   </head>
   <body onload="joonista()">
     <h1>Ilmaennustuse lumememmed</h1>
 	<p>Alumine pall = temperatuur | Keskmine pall = tuule kiirus | Ülemine pall = puhangu kiirus</p>
 	<canvas id="tahvel" width="900" height="340">
-	</canvas>
+	</canvas><br />
+	<input type="button" value="uuenda" onclick="uuendaAndmed()" />
   </body>
 </html>
