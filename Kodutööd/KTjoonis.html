@@ -1,78 +1,126 @@
+
 <!doctype html>
 <html>
   <head>
-    <title>Ilma illustreerivad lumememmed</title>
-	<script>
-	  let g;
+    <title>Hirv</title>
+    <script>
+      async function joonista(){
 
-	  // Ilmaandmed failist ilmaandmed.txt
-	  let ilmaandmed = [
-		                 ["11.10", 3, 8, 12],
-		                 ["12.10", 9, 8, 12],
-					   ];
+        let g = tahvel.getContext("2d");
 
-	  // Funktsioon lumememme joonistamiseks ilmaandmete põhjal
-	  // x, y - alumise palli keskpunkti koordinaadid
-	  // temp - temperatuur (suurem temp -> suurem alumine pall)
-	  // tuul - tuule kiirus (suurem tuul -> suurem keskmine pall)
-	  // puhang - puhangukiirus (suurem puhang -> suurem ülemine pall)
-	  // kuupaev - kuupäevatekst, mis joonistatakse alumise palli keskele
-	  function lumememm(x, y, temp, tuul, puhang, kuupaev){
-	    let r1 = temp * 8;      // alumise palli raadius
-	    let r2 = tuul * 4;      // keskmise palli raadius
-	    let r3 = puhang * 1;    // ülemise palli raadius
+        // Andmete lugemine Google Sheetsist
+        let url = "https://docs.google.com/spreadsheets/d/1PUtiNWA1rbcYbdchhglkLOIbOGaOlKW6vuUN6JEHYBA/gviz/tq?tqx=out:csv&gid=0";
 
-	    // Alumine pall (temperatuur)
-	    g.beginPath();
-	    g.arc(x, y, r1, 0, 2 * Math.PI);
-	    g.stroke();
+        try {
+          let vastus = await fetch(url);
+          let tekst = await vastus.text();
 
-	    // Kuupäev alumise palli keskele
-	    g.textAlign = "center";
-	    g.textBaseline = "middle";
-	    g.font = "14px Arial";
-	    g.fillStyle = "black";
-	    g.fillText(kuupaev, x, y);
+          let read = tekst.trim().split("\n");
 
-	    // Keskmine pall (tuule kiirus)
-	    let y2 = y - r1 - r2;
-	    g.beginPath();
-	    g.arc(x, y2, r2, 0, 2 * Math.PI);
-	    g.stroke();
+          // Viimane täidetud andmerida
+          let andmed = read[read.length - 1].split(",");
 
-	    // Ülemine pall (puhangu kiirus)
-	    let y3 = y2 - r2 - r3;
-	    g.beginPath();
-	    g.arc(x, y3, r3, 0, 2 * Math.PI);
-	    g.stroke();
-	  }
+          let kuupaev = andmed[0];
+          let sisalikud = Number(andmed[1]);
+          let linnud = Number(andmed[2]);
+          let loomad = Number(andmed[3]);
 
-	  function joonista(){
-	    g = tahvel.getContext("2d");
-        g.clearRect(0, 0, 900, 340);
-	    // Joonistame iga päeva ilmaandmete põhjal lumememme
-	    for(let i = 0; i < ilmaandmed.length; i++){
-	      let d = ilmaandmed[i];
-	      let x = 90 + i * 150;
-	      let y = 260;
-	      lumememm(x, y, d[1], d[2], d[3], d[0]);
-	    }
-	  }
-	  function uuendaAndmed(){
-		  fetch("https://script.google.com/macros/s/AKfycbyFV3Fxu9psQREozFKkmJDh_d5fLdK9wlxEN3SwLHslz0_ZWeeB9ElyMy0CR-4KLRfEJw/exec"
-			      ).then(d => d.json()).then(loe);
-	  }
-	  function loe(andmed){
-		  ilmaandmed=andmed;
-		  joonista();
-	  }
-	</script>
+          // Arvutame hirve mõõtmed
+          let jalad = 40 + sisalikud / 800 * 60;
+          let keha = 0.7 + linnud / 800 * 0.7;
+          let sarved = 25 + loomad / 100 * 0.5;
+
+          // Puhastame tahvli
+          g.clearRect(0, 0, 600, 400);
+
+          // Kuupäev
+          g.fillStyle = "black";
+          g.font = "20px Arial";
+          g.fillText(kuupaev, 20, 30);
+
+          // Jalad
+          g.strokeStyle = "brown";
+          g.lineWidth = 10;
+
+          g.beginPath();
+          g.moveTo(220, 240);
+          g.lineTo(220, 240 + jalad);
+          g.moveTo(300, 240);
+          g.lineTo(300, 240 + jalad);
+          g.stroke();
+
+          // Keha
+          g.fillStyle = "saddlebrown";
+          g.beginPath();
+          g.ellipse(260, 220, 65 * keha, 38 * keha, 0, 0, 2 * Math.PI);
+          g.fill();
+
+          // Kael
+          g.beginPath();
+          g.ellipse(340, 190, 22, 48, -0.5, 0, 2 * Math.PI);
+          g.fill();
+
+          // Pea
+          g.beginPath();
+          g.ellipse(375, 145, 30, 23, 0, 0, 2 * Math.PI);
+          g.fill();
+
+          // Nina
+          g.fillStyle = "black";
+          g.beginPath();
+          g.arc(400, 150, 6, 0, 2 * Math.PI);
+          g.fill();
+
+          // Kõrvad
+          g.fillStyle = "saddlebrown";
+          g.beginPath();
+          g.ellipse(350, 130, 18, 7, -0.5, 0, 2 * Math.PI);
+          g.fill();
+
+          // Sarved
+          g.strokeStyle = "saddlebrown";
+          g.lineWidth = 5;
+
+          g.beginPath();
+
+          // Vasak sarv
+          g.moveTo(365, 128);
+          g.lineTo(350, 128 - sarved);
+          g.lineTo(335, 115 - sarved);
+          g.moveTo(350, 128 - sarved);
+          g.lineTo(360, 95 - sarved);
+
+          // Parem sarv
+          g.moveTo(385, 125);
+          g.lineTo(400, 125 - sarved);
+          g.lineTo(415, 110 - sarved);
+          g.moveTo(400, 125 - sarved);
+          g.lineTo(390, 90 - sarved);
+
+          g.stroke();
+
+          // Silm
+          g.fillStyle = "black";
+          g.beginPath();
+          g.arc(375, 140, 3, 0, 2 * Math.PI);
+          g.fill();
+
+        }
+        catch(viga) {
+          g.fillStyle = "red";
+          g.fillText("Andmete lugemine ebaõnnestus!", 20, 50);
+          console.log(viga);
+        }
+      }
+    </script>
   </head>
+
   <body onload="joonista()">
-    <h1>Ilmaennustuse lumememmed</h1>
-	<p>Alumine pall = temperatuur | Keskmine pall = tuule kiirus | Ülemine pall = puhangu kiirus</p>
-	<canvas id="tahvel" width="900" height="340">
-	</canvas><br />
-	<input type="button" value="uuenda" onclick="uuendaAndmed()" />
+    <h1>Hirv</h1>
+
+    <canvas id="tahvel" width="600" height="400">
+    </canvas>
   </body>
 </html>
+
+	   
