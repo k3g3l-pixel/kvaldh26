@@ -67,7 +67,6 @@
     let g;
     let hirvedeAndmed = [];
 
-    // Hirve joonistamine
     function hirv(x, y, sisalikud, linnud, loomad, kuupaev) {
 
       let jalad = 40 + sisalikud / 800 * 60;
@@ -152,7 +151,6 @@
       g.restore();
     }
 
-    // Kõikide hirvede joonistamine
     function joonista() {
 
       let tahvel = document.getElementById("tahvel");
@@ -189,7 +187,6 @@
         "Hirvede arv: " + hirvedeAndmed.length;
     }
 
-    // Andmete lugemine Google Sheetsist
     function uuendaAndmed() {
 
       document.getElementById("olek").innerText =
@@ -216,7 +213,6 @@
       joonista();
     }
 
-    // Uue hirve lisamine
     function lisaHirv() {
 
       let kuupaev = document.getElementById("kuupaev").value;
@@ -245,7 +241,6 @@
         loomad: loomad
       };
 
-      // Lisame hirve kohe ekraanile
       hirvedeAndmed.push([
         uusHirv.kuupaev,
         uusHirv.sisalikud,
@@ -258,7 +253,6 @@
       document.getElementById("olek").innerText =
         "Hirv lisatud ekraanile. Saadan andmeid tabelisse...";
 
-      // Saadame andmed Google Sheetsile
       fetch(url, {
         method: "POST",
         mode: "no-cors",
@@ -280,7 +274,6 @@
         nupp.disabled = false;
       });
 
-      // Tühjendame vormi
       document.getElementById("sisalikud").value = "";
       document.getElementById("linnud").value = "";
       document.getElementById("loomad").value = "";
@@ -291,7 +284,7 @@
 
 <body onload="uuendaAndmed()">
 
-  <h1>🦌 Hirvede maailm</h1>
+  <h1>Hirved</h1>
 
   <div class="vorm">
 
@@ -300,13 +293,13 @@
     <label>Kuupäev:</label>
     <input type="date" id="kuupaev">
 
-    <label>Sisalikud:</label>
+    <label>Jala pikkus:</label>
     <input type="number" id="sisalikud" min="0" placeholder="Sisalikute arv">
 
-    <label>Linnud:</label>
+    <label>Keha suurus:</label>
     <input type="number" id="linnud" min="0" placeholder="Lindude arv">
 
-    <label>Loomad:</label>
+    <label>Sarvede uhkus:</label>
     <input type="number" id="loomad" min="0" placeholder="Loomade arv">
 
     <button id="lisaNupp" onclick="lisaHirv()">
