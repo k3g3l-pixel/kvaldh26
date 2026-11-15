@@ -1,149 +1,32 @@
 
 <!doctype html>
-<html lang="et">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Hirved</title>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #f5f1e8;
-      margin: 20px;
-    }
-
-    h1 {
-      color: #654321;
-    }
-
-    #olek {
-      margin: 15px;
-      color: #555;
-    }
-
-    canvas {
-      max-width: 100%;
-      height: auto;
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-    }
-  </style>
-
   <script>
-    const url = "https://script.google.com/macros/s/AKfycbzUsdk8wrT0yeMSqXuXi4E8IJMbC4PVuVqT3GzTOANbrWoiup9MRu9jM9Q356wiC7iSew/exec";
+    let g;
+    let hirvedeAndmed = [];
 
-    // CSV rea lugemine
-    function loeCSV(rida) {
-      return rida.match(/("([^"]|"")*"|[^,]*)(,|$)/g)
-        .map(x => x.replace(/,$/, "").replace(/^"|"$/g, "").replace(/""/g, '"'));
-    }
+    // Hirve joonistamine andmete põhjal
+    function hirv(x, y, sisalikud, linnud, loomad, kuupaev) {
 
-    // Andmete lugemine
-    async function joonista() {
-      const tahvel = document.getElementById("tahvel");
-      const g = tahvel.getContext("2d");
-      const olek = document.getElementById("olek");
-
-      olek.textContent = "Laen hirvede andmeid...";
-
-      try {
-        const vastus = await fetch(url);
-
-        if (!vastus.ok) {
-          throw new Error("Andmete päring ebaõnnestus!");
-        }
-
-        const tekst = await vastus.text();
-
-        // Eraldame andmeread
-        const read = tekst.trim().split(/\r?\n/);
-
-        // Loeme kõik sobivad andmeread
-        const hirved = [];
-
-        for (let i = 0; i < read.length; i++) {
-          const andmed = loeCSV(read[i]);
-
-          if (andmed.length < 4) continue;
-
-          const kuupaev = andmed[0].trim();
-          const sisalikud = Number(andmed[1]);
-          const linnud = Number(andmed[2]);
-          const loomad = Number(andmed[3]);
-
-          // Jätame päise ja vigased read vahele
-          if (
-            !kuupaev ||
-            !Number.isFinite(sisalikud) ||
-            !Number.isFinite(linnud) ||
-            !Number.isFinite(loomad)
-          ) {
-            continue;
-          }
-
-          hirved.push({
-            kuupaev,
-            sisalikud,
-            linnud,
-            loomad
-          });
-        }
-
-        if (hirved.length === 0) {
-          throw new Error("Andmeid ei leitud!");
-        }
-
-        // Hirvede paigutus
-        const veerge = 3;
-        const laius = 220;
-        const korgus = 270;
-
-        const ridu = Math.ceil(hirved.length / veerge);
-
-        tahvel.width = veerge * laius;
-        tahvel.height = ridu * korgus;
-
-        g.clearRect(0, 0, tahvel.width, tahvel.height);
-
-        // Joonistame kõik hirved
-        hirved.forEach((h, i) => {
-          const x = (i % veerge) * laius;
-          const y = Math.floor(i / veerge) * korgus;
-
-          joonistaHirv(g, h, x, y);
-        });
-
-        olek.textContent =
-          "Kuvatud hirvede arv: " + hirved.length;
-
-      } catch (viga) {
-        olek.textContent = "Viga: " + viga.message;
-        console.error(viga);
-      }
-    }
-
-    // Ühe hirve joonistamine
-    function joonistaHirv(g, h, x, y) {
-
-      const jalad = 40 + h.sisalikud / 800 * 60;
-      const keha = 0.7 + h.linnud / 800 * 0.7;
-      const sarved = 25 + h.loomad / 100 * 0.5;
-
-      const s = 0.9;
+      // Hirve mõõtmed
+      let jalad = 40 + sisalikud / 800 * 60;
+      let keha = 0.7 + linnud / 800 * 0.7;
+      let sarved = 25 + loomad / 100 * 0.5;
 
       g.save();
 
       // Hirve asukoht
-      g.translate(x + 10 - 220 * s, y + 35 - 90 * s);
-      g.scale(s, s);
+      g.translate(x - 200, y - 55);
 
       // Kuupäev
       g.fillStyle = "black";
-      g.font = "20px Arial";
-      g.fillText(h.kuupaev, 220, 75);
+      g.font = "18px Arial";
+      g.textAlign = "left";
+      g.fillText(kuupaev, 220, 75);
 
       // Jalad
       g.strokeStyle = "brown";
@@ -160,12 +43,7 @@
       // Keha
       g.fillStyle = "saddlebrown";
       g.beginPath();
-      g.ellipse(
-        260, 220,
-        65 * keha,
-        38 * keha,
-        0, 0, 2 * Math.PI
-      );
+      g.ellipse(260, 220, 65 * keha, 38 * keha, 0, 0, 2 * Math.PI);
       g.fill();
 
       // Kael
@@ -223,17 +101,115 @@
       g.restore();
     }
 
+
+    // Kõikide hirvede joonistamine
+    function joonista() {
+
+      let tahvel = document.getElementById("tahvel");
+      g = tahvel.getContext("2d");
+
+      let veerge = 3;
+      let laius = 250;
+      let korgus = 310;
+
+      let ridu = Math.ceil(hirvedeAndmed.length / veerge);
+
+      tahvel.width = veerge * laius;
+      tahvel.height = Math.max(1, ridu) * korgus;
+
+      g.clearRect(0, 0, tahvel.width, tahvel.height);
+
+      // Joonistame iga andmerea põhjal ühe hirve
+      for (let i = 0; i < hirvedeAndmed.length; i++) {
+
+        let d = hirvedeAndmed[i];
+
+        let x = (i % veerge) * laius;
+        let y = Math.floor(i / veerge) * korgus;
+
+        hirv(
+          x,
+          y,
+          Number(d[1]),
+          Number(d[2]),
+          Number(d[3]),
+          d[0]
+        );
+      }
+
+      document.getElementById("olek").innerText =
+        "Kuvatud hirvede arv: " + hirvedeAndmed.length;
+    }
+
+
+    // Andmete uuendamine Google Sheetsist
+    function uuendaAndmed() {
+
+      document.getElementById("olek").innerText =
+        "Laen andmeid...";
+
+      fetch("https://script.google.com/macros/s/AKfycbzUsdk8wrT0yeMSqXuXi4E8IJMbC4PVuVqT3GzTOANbrWoiup9MRu9jM9Q356wiC7iSew/exec")
+        .then(d => {
+          if (!d.ok) {
+            throw new Error("Andmete päring ebaõnnestus!");
+          }
+          return d.json();
+        })
+        .then(loe)
+        .catch(viga => {
+          document.getElementById("olek").innerText =
+            "Andmete laadimine ebaõnnestus: " + viga.message;
+          console.log(viga);
+        });
+    }
+
+
+    // Andmete salvestamine ja joonistamine
+    function loe(andmed) {
+
+      hirvedeAndmed = andmed;
+
+      joonista();
+    }
+
   </script>
+
+  <style>
+    body {
+      font-family: Arial;
+      background-color: #f5f1e8;
+      text-align: center;
+    }
+
+    canvas {
+      background-color: white;
+      border: 1px solid gray;
+      max-width: 100%;
+      height: auto;
+    }
+
+    input {
+      padding: 8px 20px;
+      margin: 10px;
+      cursor: pointer;
+    }
+  </style>
+
 </head>
 
-<body onload="joonista()">
+<body onload="uuendaAndmed()">
 
   <h1>Hirvede maailm</h1>
 
   <p id="olek">Andmete laadimine...</p>
 
-  <canvas id="tahvel" width="660" height="270">
+  <canvas id="tahvel" width="750" height="310">
   </canvas>
+
+  <br>
+
+  <input type="button" value="Uuenda andmeid" onclick="uuendaAndmed()">
 
 </body>
 </html>
+
