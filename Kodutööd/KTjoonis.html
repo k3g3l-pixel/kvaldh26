@@ -1,126 +1,239 @@
 
 <!doctype html>
-<html>
-  <head>
-    <title>Hirv</title>
-    <script>
-      async function joonista(){
+<html lang="et">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hirved</title>
 
-        let g = tahvel.getContext("2d");
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f5f1e8;
+      margin: 20px;
+    }
 
-        // Andmete lugemine Google Sheetsist
-        let url = "https://script.google.com/macros/s/AKfycbzUsdk8wrT0yeMSqXuXi4E8IJMbC4PVuVqT3GzTOANbrWoiup9MRu9jM9Q356wiC7iSew/exec";
+    h1 {
+      color: #654321;
+    }
 
-        try {
-          let vastus = await fetch(url);
-          let tekst = await vastus.text();
+    #olek {
+      margin: 15px;
+      color: #555;
+    }
 
-          let read = tekst.trim().split("\n");
+    canvas {
+      max-width: 100%;
+      height: auto;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+  </style>
 
-          // Viimane täidetud andmerida
-          let andmed = read[read.length - 1].split(",");
+  <script>
+    const url = "https://script.google.com/macros/s/AKfycbzUsdk8wrT0yeMSqXuXi4E8IJMbC4PVuVqT3GzTOANbrWoiup9MRu9jM9Q356wiC7iSew/exec";
 
-          let kuupaev = andmed[0];
-          let sisalikud = Number(andmed[1]);
-          let linnud = Number(andmed[2]);
-          let loomad = Number(andmed[3]);
+    // CSV rea lugemine
+    function loeCSV(rida) {
+      return rida.match(/("([^"]|"")*"|[^,]*)(,|$)/g)
+        .map(x => x.replace(/,$/, "").replace(/^"|"$/g, "").replace(/""/g, '"'));
+    }
 
-          // Arvutame hirve mõõtmed
-          let jalad = 40 + sisalikud / 800 * 60;
-          let keha = 0.7 + linnud / 800 * 0.7;
-          let sarved = 25 + loomad / 100 * 0.5;
+    // Andmete lugemine
+    async function joonista() {
+      const tahvel = document.getElementById("tahvel");
+      const g = tahvel.getContext("2d");
+      const olek = document.getElementById("olek");
 
-          // Puhastame tahvli
-          g.clearRect(0, 0, 600, 400);
+      olek.textContent = "Laen hirvede andmeid...";
 
-          // Kuupäev
-          g.fillStyle = "black";
-          g.font = "20px Arial";
-          g.fillText(kuupaev, 20, 30);
+      try {
+        const vastus = await fetch(url);
 
-          // Jalad
-          g.strokeStyle = "brown";
-          g.lineWidth = 10;
-
-          g.beginPath();
-          g.moveTo(220, 240);
-          g.lineTo(220, 240 + jalad);
-          g.moveTo(300, 240);
-          g.lineTo(300, 240 + jalad);
-          g.stroke();
-
-          // Keha
-          g.fillStyle = "saddlebrown";
-          g.beginPath();
-          g.ellipse(260, 220, 65 * keha, 38 * keha, 0, 0, 2 * Math.PI);
-          g.fill();
-
-          // Kael
-          g.beginPath();
-          g.ellipse(340, 190, 22, 48, -0.5, 0, 2 * Math.PI);
-          g.fill();
-
-          // Pea
-          g.beginPath();
-          g.ellipse(375, 145, 30, 23, 0, 0, 2 * Math.PI);
-          g.fill();
-
-          // Nina
-          g.fillStyle = "black";
-          g.beginPath();
-          g.arc(400, 150, 6, 0, 2 * Math.PI);
-          g.fill();
-
-          // Kõrvad
-          g.fillStyle = "saddlebrown";
-          g.beginPath();
-          g.ellipse(350, 130, 18, 7, -0.5, 0, 2 * Math.PI);
-          g.fill();
-
-          // Sarved
-          g.strokeStyle = "saddlebrown";
-          g.lineWidth = 5;
-
-          g.beginPath();
-
-          // Vasak sarv
-          g.moveTo(365, 128);
-          g.lineTo(350, 128 - sarved);
-          g.lineTo(335, 115 - sarved);
-          g.moveTo(350, 128 - sarved);
-          g.lineTo(360, 95 - sarved);
-
-          // Parem sarv
-          g.moveTo(385, 125);
-          g.lineTo(400, 125 - sarved);
-          g.lineTo(415, 110 - sarved);
-          g.moveTo(400, 125 - sarved);
-          g.lineTo(390, 90 - sarved);
-
-          g.stroke();
-
-          // Silm
-          g.fillStyle = "black";
-          g.beginPath();
-          g.arc(375, 140, 3, 0, 2 * Math.PI);
-          g.fill();
-
+        if (!vastus.ok) {
+          throw new Error("Andmete päring ebaõnnestus!");
         }
-        catch(viga) {
-          g.fillStyle = "red";
-          g.fillText("Andmete lugemine ebaõnnestus!", 20, 50);
-          console.log(viga);
+
+        const tekst = await vastus.text();
+
+        // Eraldame andmeread
+        const read = tekst.trim().split(/\r?\n/);
+
+        // Loeme kõik sobivad andmeread
+        const hirved = [];
+
+        for (let i = 0; i < read.length; i++) {
+          const andmed = loeCSV(read[i]);
+
+          if (andmed.length < 4) continue;
+
+          const kuupaev = andmed[0].trim();
+          const sisalikud = Number(andmed[1]);
+          const linnud = Number(andmed[2]);
+          const loomad = Number(andmed[3]);
+
+          // Jätame päise ja vigased read vahele
+          if (
+            !kuupaev ||
+            !Number.isFinite(sisalikud) ||
+            !Number.isFinite(linnud) ||
+            !Number.isFinite(loomad)
+          ) {
+            continue;
+          }
+
+          hirved.push({
+            kuupaev,
+            sisalikud,
+            linnud,
+            loomad
+          });
         }
+
+        if (hirved.length === 0) {
+          throw new Error("Andmeid ei leitud!");
+        }
+
+        // Hirvede paigutus
+        const veerge = 3;
+        const laius = 220;
+        const korgus = 270;
+
+        const ridu = Math.ceil(hirved.length / veerge);
+
+        tahvel.width = veerge * laius;
+        tahvel.height = ridu * korgus;
+
+        g.clearRect(0, 0, tahvel.width, tahvel.height);
+
+        // Joonistame kõik hirved
+        hirved.forEach((h, i) => {
+          const x = (i % veerge) * laius;
+          const y = Math.floor(i / veerge) * korgus;
+
+          joonistaHirv(g, h, x, y);
+        });
+
+        olek.textContent =
+          "Kuvatud hirvede arv: " + hirved.length;
+
+      } catch (viga) {
+        olek.textContent = "Viga: " + viga.message;
+        console.error(viga);
       }
-    </script>
-  </head>
+    }
 
-  <body onload="joonista()">
-    <h1>Hirv</h1>
+    // Ühe hirve joonistamine
+    function joonistaHirv(g, h, x, y) {
 
-    <canvas id="tahvel" width="600" height="400">
-    </canvas>
-  </body>
+      const jalad = 40 + h.sisalikud / 800 * 60;
+      const keha = 0.7 + h.linnud / 800 * 0.7;
+      const sarved = 25 + h.loomad / 100 * 0.5;
+
+      const s = 0.9;
+
+      g.save();
+
+      // Hirve asukoht
+      g.translate(x + 10 - 220 * s, y + 35 - 90 * s);
+      g.scale(s, s);
+
+      // Kuupäev
+      g.fillStyle = "black";
+      g.font = "20px Arial";
+      g.fillText(h.kuupaev, 220, 75);
+
+      // Jalad
+      g.strokeStyle = "brown";
+      g.lineWidth = 10;
+
+      g.beginPath();
+      g.moveTo(220, 240);
+      g.lineTo(220, 240 + jalad);
+
+      g.moveTo(300, 240);
+      g.lineTo(300, 240 + jalad);
+      g.stroke();
+
+      // Keha
+      g.fillStyle = "saddlebrown";
+      g.beginPath();
+      g.ellipse(
+        260, 220,
+        65 * keha,
+        38 * keha,
+        0, 0, 2 * Math.PI
+      );
+      g.fill();
+
+      // Kael
+      g.beginPath();
+      g.ellipse(340, 190, 22, 48, -0.5, 0, 2 * Math.PI);
+      g.fill();
+
+      // Pea
+      g.beginPath();
+      g.ellipse(375, 145, 30, 23, 0, 0, 2 * Math.PI);
+      g.fill();
+
+      // Nina
+      g.fillStyle = "black";
+      g.beginPath();
+      g.arc(400, 150, 6, 0, 2 * Math.PI);
+      g.fill();
+
+      // Kõrvad
+      g.fillStyle = "saddlebrown";
+      g.beginPath();
+      g.ellipse(350, 130, 18, 7, -0.5, 0, 2 * Math.PI);
+      g.fill();
+
+      // Sarved
+      g.strokeStyle = "saddlebrown";
+      g.lineWidth = 5;
+
+      g.beginPath();
+
+      // Vasak sarv
+      g.moveTo(365, 128);
+      g.lineTo(350, 128 - sarved);
+      g.lineTo(335, 115 - sarved);
+
+      g.moveTo(350, 128 - sarved);
+      g.lineTo(360, 95 - sarved);
+
+      // Parem sarv
+      g.moveTo(385, 125);
+      g.lineTo(400, 125 - sarved);
+      g.lineTo(415, 110 - sarved);
+
+      g.moveTo(400, 125 - sarved);
+      g.lineTo(390, 90 - sarved);
+
+      g.stroke();
+
+      // Silm
+      g.fillStyle = "black";
+      g.beginPath();
+      g.arc(375, 140, 3, 0, 2 * Math.PI);
+      g.fill();
+
+      g.restore();
+    }
+
+  </script>
+</head>
+
+<body onload="joonista()">
+
+  <h1>Hirvede maailm</h1>
+
+  <p id="olek">Andmete laadimine...</p>
+
+  <canvas id="tahvel" width="660" height="270">
+  </canvas>
+
+</body>
 </html>
-
-	   
