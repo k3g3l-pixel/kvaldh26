@@ -1,31 +1,85 @@
 
 <!doctype html>
-<html>
+<html lang="et">
 <head>
   <meta charset="UTF-8">
-  <title>Hirved</title>
+  <title>Hirvede maailm</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f5f1e8;
+      text-align: center;
+      margin: 20px;
+    }
+
+    .vorm {
+      background: white;
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 400px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px #ccc;
+    }
+
+    .vorm input {
+      display: block;
+      width: 90%;
+      padding: 10px;
+      margin: 10px auto;
+      box-sizing: border-box;
+    }
+
+    button {
+      background: #587b3c;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background: #3e5e29;
+    }
+
+    button:disabled {
+      background: gray;
+      cursor: wait;
+    }
+
+    canvas {
+      background: white;
+      border: 1px solid gray;
+      max-width: 100%;
+      height: auto;
+    }
+
+    #olek {
+      font-weight: bold;
+    }
+  </style>
 
   <script>
+    const url = "https://script.google.com/macros/s/AKfycbzUsdk8wrT0yeMSqXuXi4E8IJMbC4PVuVqT3GzTOANbrWoiup9MRu9jM9Q356wiC7iSew/exec";
+
     let g;
     let hirvedeAndmed = [];
 
-    // Hirve joonistamine andmete põhjal
+    // Hirve joonistamine
     function hirv(x, y, sisalikud, linnud, loomad, kuupaev) {
 
-      // Hirve mõõtmed
       let jalad = 40 + sisalikud / 800 * 60;
       let keha = 0.7 + linnud / 800 * 0.7;
       let sarved = 25 + loomad / 100 * 0.5;
 
       g.save();
-
-      // Hirve asukoht
       g.translate(x - 200, y - 55);
 
       // Kuupäev
       g.fillStyle = "black";
       g.font = "18px Arial";
-      g.textAlign = "left";
       g.fillText(kuupaev, 220, 75);
 
       // Jalad
@@ -35,7 +89,6 @@
       g.beginPath();
       g.moveTo(220, 240);
       g.lineTo(220, 240 + jalad);
-
       g.moveTo(300, 240);
       g.lineTo(300, 240 + jalad);
       g.stroke();
@@ -74,7 +127,6 @@
 
       g.beginPath();
 
-      // Vasak sarv
       g.moveTo(365, 128);
       g.lineTo(350, 128 - sarved);
       g.lineTo(335, 115 - sarved);
@@ -82,7 +134,6 @@
       g.moveTo(350, 128 - sarved);
       g.lineTo(360, 95 - sarved);
 
-      // Parem sarv
       g.moveTo(385, 125);
       g.lineTo(400, 125 - sarved);
       g.lineTo(415, 110 - sarved);
@@ -101,7 +152,6 @@
       g.restore();
     }
 
-
     // Kõikide hirvede joonistamine
     function joonista() {
 
@@ -119,7 +169,6 @@
 
       g.clearRect(0, 0, tahvel.width, tahvel.height);
 
-      // Joonistame iga andmerea põhjal ühe hirve
       for (let i = 0; i < hirvedeAndmed.length; i++) {
 
         let d = hirvedeAndmed[i];
@@ -128,8 +177,7 @@
         let y = Math.floor(i / veerge) * korgus;
 
         hirv(
-          x,
-          y,
+          x, y,
           Number(d[1]),
           Number(d[2]),
           Number(d[3]),
@@ -137,78 +185,148 @@
         );
       }
 
-      document.getElementById("olek").innerText =
-        "Kuvatud hirvede arv: " + hirvedeAndmed.length;
+      document.getElementById("arv").innerText =
+        "Hirvede arv: " + hirvedeAndmed.length;
     }
 
-
-    // Andmete uuendamine Google Sheetsist
+    // Andmete lugemine Google Sheetsist
     function uuendaAndmed() {
 
       document.getElementById("olek").innerText =
         "Laen andmeid...";
 
-      fetch("https://script.google.com/macros/s/AKfycbzUsdk8wrT0yeMSqXuXi4E8IJMbC4PVuVqT3GzTOANbrWoiup9MRu9jM9Q356wiC7iSew/exec")
+      fetch(url)
         .then(d => {
-          if (!d.ok) {
-            throw new Error("Andmete päring ebaõnnestus!");
-          }
+          if (!d.ok) throw new Error("Andmete lugemine ebaõnnestus");
           return d.json();
         })
-        .then(loe)
+        .then(andmed => {
+          loe(andmed);
+          document.getElementById("olek").innerText =
+            "Andmed laaditud!";
+        })
         .catch(viga => {
           document.getElementById("olek").innerText =
-            "Andmete laadimine ebaõnnestus: " + viga.message;
-          console.log(viga);
+            "Viga andmete lugemisel: " + viga.message;
         });
     }
 
-
-    // Andmete salvestamine ja joonistamine
     function loe(andmed) {
-
       hirvedeAndmed = andmed;
-
       joonista();
     }
 
+    // Uue hirve lisamine
+    function lisaHirv() {
+
+      let kuupaev = document.getElementById("kuupaev").value;
+      let sisalikud = Number(document.getElementById("sisalikud").value);
+      let linnud = Number(document.getElementById("linnud").value);
+      let loomad = Number(document.getElementById("loomad").value);
+
+      if (!kuupaev ||
+          document.getElementById("sisalikud").value === "" ||
+          document.getElementById("linnud").value === "" ||
+          document.getElementById("loomad").value === "" ||
+          ![sisalikud, linnud, loomad].every(n => Number.isFinite(n) && n >= 0)) {
+
+        alert("Palun täida kõik väljad korrektsete arvudega!");
+        return;
+      }
+
+      const nupp = document.getElementById("lisaNupp");
+
+      nupp.disabled = true;
+
+      let uusHirv = {
+        kuupaev: kuupaev,
+        sisalikud: sisalikud,
+        linnud: linnud,
+        loomad: loomad
+      };
+
+      // Lisame hirve kohe ekraanile
+      hirvedeAndmed.push([
+        uusHirv.kuupaev,
+        uusHirv.sisalikud,
+        uusHirv.linnud,
+        uusHirv.loomad
+      ]);
+
+      joonista();
+
+      document.getElementById("olek").innerText =
+        "Hirv lisatud ekraanile. Saadan andmeid tabelisse...";
+
+      // Saadame andmed Google Sheetsile
+      fetch(url, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(uusHirv)
+      })
+      .then(() => {
+        document.getElementById("olek").innerText =
+          "Hirv lisatud! Salvestuspäring saadetud Google Sheetsile.";
+      })
+      .catch(viga => {
+        document.getElementById("olek").innerText =
+          "Hirv on ekraanil, kuid saatmisel tekkis võrguviga!";
+        console.log(viga);
+      })
+      .finally(() => {
+        nupp.disabled = false;
+      });
+
+      // Tühjendame vormi
+      document.getElementById("sisalikud").value = "";
+      document.getElementById("linnud").value = "";
+      document.getElementById("loomad").value = "";
+    }
+
   </script>
-
-  <style>
-    body {
-      font-family: Arial;
-      background-color: #f5f1e8;
-      text-align: center;
-    }
-
-    canvas {
-      background-color: white;
-      border: 1px solid gray;
-      max-width: 100%;
-      height: auto;
-    }
-
-    input {
-      padding: 8px 20px;
-      margin: 10px;
-      cursor: pointer;
-    }
-  </style>
-
 </head>
 
 <body onload="uuendaAndmed()">
 
-  <h1>Hirvede maailm</h1>
+  <h1>🦌 Hirvede maailm</h1>
 
-  <p id="olek">Andmete laadimine...</p>
+  <div class="vorm">
+
+    <h2>Lisa uus hirv</h2>
+
+    <label>Kuupäev:</label>
+    <input type="date" id="kuupaev">
+
+    <label>Sisalikud:</label>
+    <input type="number" id="sisalikud" min="0" placeholder="Sisalikute arv">
+
+    <label>Linnud:</label>
+    <input type="number" id="linnud" min="0" placeholder="Lindude arv">
+
+    <label>Loomad:</label>
+    <input type="number" id="loomad" min="0" placeholder="Loomade arv">
+
+    <button id="lisaNupp" onclick="lisaHirv()">
+      Lisa hirv
+    </button>
+
+    <p id="olek">Laen andmeid...</p>
+
+  </div>
+
+  <h2 id="arv">Hirvede arv: 0</h2>
 
   <canvas id="tahvel" width="750" height="310">
   </canvas>
 
-  <br>
+  <br><br>
 
-  <input type="button" value="Uuenda andmeid" onclick="uuendaAndmed()">
+  <button onclick="uuendaAndmed()">
+    Uuenda andmeid tabelist
+  </button>
 
 </body>
 </html>
