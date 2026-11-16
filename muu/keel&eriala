@@ -1,0 +1,18 @@
+import os
+
+from definitions import poem_1, poem_2
+from utils import settings, gemini, gpt4, init_gemini, printmd
+import utils
+
+%load_ext jupyter_ai_magics
+
+temperature = 0.8
+system_prompt = "You are an expert in German literature. You answer the questions truthfully and short."
+
+settings(system_prompt, temperature)
+
+#defining aliases
+init_gemini()
+
+model =  gpt4()
+%ai register gpt4o model
