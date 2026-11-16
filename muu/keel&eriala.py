@@ -1,3 +1,4 @@
+python -m spacy download de_core_news_sm
 import spacy
 nlp = spacy.load("de_core_news_sm")
 import de_core_news_sm
